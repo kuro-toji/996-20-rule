@@ -331,10 +331,11 @@ class Protocol996(QWidget):
         # ============================================================
         # SECTION 5: UI DESIGN & THEMES
         # ============================================================
-        # Dark/light mode toggle, button styling, colors
+        # Dark/light mode toggle, button styling, colors, progress bar styling
         theme_layout = QHBoxLayout()
         theme_layout.addStretch()
         self.theme_btn = QPushButton("🌙 Dark" if self.theme == "light" else "☀️ Light")
+        self.theme_btn.setCursor(Qt.PointingHandCursor)
         self.theme_btn.clicked.connect(self.toggle_theme)
         theme_layout.addWidget(self.theme_btn)
         main_layout.addLayout(theme_layout)
