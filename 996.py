@@ -189,6 +189,7 @@ class Protocol996(QWidget):
         self.setWindowTitle("996 Protocol")
         self.setMinimumSize(400, 600)
         self.resize(480, 720)
+        self.setFocusPolicy(Qt.StrongFocus)
         
         main_layout = QVBoxLayout()
         main_layout.setSpacing(15)
@@ -736,22 +737,26 @@ class Protocol996(QWidget):
     # Ctrl+S stop, Ctrl+R resume, Ctrl+E end day, Ctrl+T toggle always-on-top, Ctrl+Q quit
     
     def keyPressEvent(self, event):
-        # Keyboard shortcuts for quick actions
+        if event.modifiers() == Qt.ControlModifier:
             if event.key() == Qt.Key_S:
                 self.stop_session()
+                return
             elif event.key() == Qt.Key_R:
                 if self.last_mode == "eye_protection":
                     self.start_with_eye_protection()
                 elif self.last_mode == "focus":
                     self.start_focus_mode()
+                return
             elif event.key() == Qt.Key_E:
                 self.end_day()
+                return
             elif event.key() == Qt.Key_T:
                 self.toggle_always_on_top()
+                return
             elif event.key() == Qt.Key_Q:
                 self.close()
-        else:
-            super().keyPressEvent(event)
+                return
+        super().keyPressEvent(event)
     
     def closeEvent(self, event):
         if self.state == "running":
