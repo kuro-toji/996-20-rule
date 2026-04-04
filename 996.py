@@ -304,6 +304,7 @@ class Protocol996(QWidget):
         # 7-day squares (Mon-Sun), green if 4+ hours worked
         
         streak_label = QLabel("This week")
+        streak_label.setAlignment(Qt.AlignCenter)
         streak_label.setStyleSheet("font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;")
         main_layout.addWidget(streak_label)
         
