@@ -534,7 +534,7 @@ class Protocol996(QWidget):
     # ============================================================
     # SECTION 6: DATA PERSISTENCE
     # ============================================================
-    # JSON save/load to ~/.996protocol/data.json, auto-save triggers
+    # JSON save/load to ~/.996protocol/data.json, auto-save triggers, load on startup
     
     def load_data(self):
         if not DATA_DIR.exists():
