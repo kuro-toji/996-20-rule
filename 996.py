@@ -730,13 +730,13 @@ class Protocol996(QWidget):
         self.show()
         self.save_data()
     
+    # ============================================================
+    # SECTION 8: KEYBOARD SHORTCUTS
+    # ============================================================
+    # Ctrl+S stop, Ctrl+R resume, Ctrl+E end day, Ctrl+T toggle always-on-top, Ctrl+Q quit
+    
     def keyPressEvent(self, event):
-        # ============================================================
-        # SECTION 8: KEYBOARD SHORTCUTS
-        # ============================================================
-        # Ctrl+S stop, Ctrl+R resume, Ctrl+E end day, Ctrl+T toggle always-on-top, Ctrl+Q quit
-        
-        if event.modifiers() == Qt.ControlModifier:
+        # Keyboard shortcuts for quick actions
             if event.key() == Qt.Key_S:
                 self.stop_session()
             elif event.key() == Qt.Key_R:
