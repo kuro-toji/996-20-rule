@@ -48,6 +48,14 @@ DATA_DIR = Path.home() / ".996protocol"
 DATA_FILE = DATA_DIR / "data.json"
 
 
+# ============================================================
+# SECTION 2: 20-20-20 EYE PROTECTION SYSTEM
+# ============================================================
+# ============================================================
+# SECTION 2: 20-20-20 EYE PROTECTION SYSTEM
+# ============================================================
+# 20-minute timer triggers fullscreen overlay, 20-second countdown
+# Unskippable for first 10 seconds
 class EyeBreakOverlay(QWidget):
     dismiss_signal = pyqtSignal()
     
@@ -147,6 +155,10 @@ class EyeBreakOverlay(QWidget):
             pass
 
 
+# ============================================================
+# SECTION 1: MAIN TIMER (996 COUNTDOWN)
+# ============================================================
+# Large countdown timer, 4 control buttons, status bar, progress bar
 class Protocol996(QWidget):
     def __init__(self):
         super().__init__()
@@ -196,6 +208,11 @@ class Protocol996(QWidget):
         
         main_layout.addLayout(header_layout)
         
+        # ============================================================
+        # SECTION 1: MAIN TIMER (996 COUNTDOWN)
+        # ============================================================
+        # Large countdown timer, 4 control buttons, status bar, progress bar
+        
         self.timer_label = QLabel("12:00:00")
         self.timer_label.setAlignment(Qt.AlignCenter)
         self.timer_label.setStyleSheet("font-size: 72px; font-family: monospace; font-weight: bold;")
@@ -244,6 +261,11 @@ class Protocol996(QWidget):
         self.eye_break_label.setAlignment(Qt.AlignCenter)
         main_layout.addWidget(self.eye_break_label)
         
+        # ============================================================
+        # SECTION 3: DAILY DASHBOARD
+        # ============================================================
+        # Date header, notes textarea, stat cards (time worked, eye breaks)
+        
         self.dashboard_label = QLabel(f"Today — {self.get_formatted_date()}")
         self.dashboard_label.setStyleSheet("font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;")
         main_layout.addWidget(self.dashboard_label)
@@ -279,6 +301,11 @@ class Protocol996(QWidget):
         
         main_layout.addLayout(stats_layout)
         
+        # ============================================================
+        # SECTION 4: STREAK TRACKER
+        # ============================================================
+        # 7-day squares (Mon-Sun), green if 4+ hours worked
+        
         streak_label = QLabel("This week")
         streak_label.setStyleSheet("font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;")
         main_layout.addWidget(streak_label)
@@ -303,6 +330,10 @@ class Protocol996(QWidget):
         
         main_layout.addLayout(self.streak_layout)
         
+        # ============================================================
+        # SECTION 5: UI DESIGN & THEMES
+        # ============================================================
+        # Dark/light mode toggle, button styling, colors
         theme_layout = QHBoxLayout()
         theme_layout.addStretch()
         self.theme_btn = QPushButton("🌙 Dark" if self.theme == "light" else "☀️ Light")
@@ -501,6 +532,11 @@ class Protocol996(QWidget):
     def save_note(self):
         self.save_data()
     
+    # ============================================================
+    # SECTION 6: DATA PERSISTENCE
+    # ============================================================
+    # JSON save/load to ~/.996protocol/data.json, auto-save triggers
+    
     def load_data(self):
         if not DATA_DIR.exists():
             DATA_DIR.mkdir(parents=True)
@@ -696,6 +732,11 @@ class Protocol996(QWidget):
         self.save_data()
     
     def keyPressEvent(self, event):
+        # ============================================================
+        # SECTION 8: KEYBOARD SHORTCUTS
+        # ============================================================
+        # Ctrl+S stop, Ctrl+R resume, Ctrl+E end day, Ctrl+T toggle always-on-top, Ctrl+Q quit
+        
         if event.modifiers() == Qt.ControlModifier:
             if event.key() == Qt.Key_S:
                 self.stop_session()
@@ -737,6 +778,11 @@ class Protocol996(QWidget):
         else:
             self.save_data()
             event.accept()
+    
+    # ============================================================
+    # SECTION 8: SYSTEM TRAY
+    # ============================================================
+    # Minimize to tray, right-click menu (Show, Stop session, End day, Quit)
     
     def setup_tray(self):
         self.tray_icon = QSystemTrayIcon(self)
