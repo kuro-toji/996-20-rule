@@ -51,9 +51,6 @@ DATA_FILE = DATA_DIR / "data.json"
 # ============================================================
 # SECTION 2: 20-20-20 EYE PROTECTION SYSTEM
 # ============================================================
-# ============================================================
-# SECTION 2: 20-20-20 EYE PROTECTION SYSTEM
-# ============================================================
 # 20-minute timer triggers fullscreen overlay, 20-second countdown
 # Unskippable for first 10 seconds
 class EyeBreakOverlay(QWidget):
