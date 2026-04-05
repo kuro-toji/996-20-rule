@@ -105,25 +105,25 @@ class EyeBreakOverlay(QWidget):
 
     def setup_ui(self):
         layout = QVBoxLayout()
-        layout.setAlignment(Qt.AlignCenter)
+        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.setSpacing(20)
 
         self.label1 = QLabel("EYE BREAK")
-        self.label1.setAlignment(Qt.AlignCenter)
+        self.label1.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.label1.setStyleSheet(
             "color: #8b7cf8; font-size: 16px; letter-spacing: 4px; font-weight: bold;"
         )
 
         self.label2 = QLabel("Look 20 feet away")
-        self.label2.setAlignment(Qt.AlignCenter)
+        self.label2.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.label2.setStyleSheet("color: white; font-size: 32px; font-weight: medium;")
 
         self.label3 = QLabel("Relax your focus completely")
-        self.label3.setAlignment(Qt.AlignCenter)
+        self.label3.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.label3.setStyleSheet("color: #8a8a96; font-size: 14px;")
 
         self.countdown_label = QLabel("20")
-        self.countdown_label.setAlignment(Qt.AlignCenter)
+        self.countdown_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.countdown_label.setStyleSheet(
             "color: white; font-size: 120px; font-family: monospace;"
         )
@@ -144,7 +144,7 @@ class EyeBreakOverlay(QWidget):
         """)
 
         self.dismiss_label = QLabel("Press any key or click to dismiss")
-        self.dismiss_label.setAlignment(Qt.AlignCenter)
+        self.dismiss_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.dismiss_label.setStyleSheet("color: #555; font-size: 12px;")
         self.dismiss_label.setVisible(False)
 
@@ -234,7 +234,7 @@ class Protocol996(QWidget):
         self.setWindowTitle("996 Protocol")
         self.setMinimumSize(400, 600)
         self.resize(480, 720)
-        self.setFocusPolicy(Qt.StrongFocus)
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
         main_layout = QVBoxLayout()
         main_layout.setSpacing(15)
@@ -259,7 +259,7 @@ class Protocol996(QWidget):
         # Large countdown timer, 4 control buttons, status bar, progress bar
 
         self.timer_label = QLabel("12:00:00")
-        self.timer_label.setAlignment(Qt.AlignCenter)
+        self.timer_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.timer_label.setStyleSheet(
             "font-size: 72px; font-family: monospace; font-weight: bold;"
         )
@@ -269,19 +269,19 @@ class Protocol996(QWidget):
         button_layout.setSpacing(10)
 
         self.btn_start_2020 = QPushButton("Start 20-20-20")
-        self.btn_start_2020.setCursor(Qt.PointingHandCursor)
+        self.btn_start_2020.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_start_2020.clicked.connect(self.start_with_eye_protection)
 
         self.btn_start_focus = QPushButton("Start (no 20-20-20)")
-        self.btn_start_focus.setCursor(Qt.PointingHandCursor)
+        self.btn_start_focus.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_start_focus.clicked.connect(self.start_focus_mode)
 
         self.btn_stop = QPushButton("Stop session")
-        self.btn_stop.setCursor(Qt.PointingHandCursor)
+        self.btn_stop.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_stop.clicked.connect(self.stop_session)
 
         self.btn_end_day = QPushButton("End day")
-        self.btn_end_day.setCursor(Qt.PointingHandCursor)
+        self.btn_end_day.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_end_day.clicked.connect(self.end_day)
 
         for btn in [
@@ -300,7 +300,7 @@ class Protocol996(QWidget):
         main_layout.addLayout(button_layout)
 
         self.status_label = QLabel("Status: Idle")
-        self.status_label.setAlignment(Qt.AlignCenter)
+        self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         main_layout.addWidget(self.status_label)
 
         self.progress_bar = QProgressBar()
@@ -310,7 +310,7 @@ class Protocol996(QWidget):
         main_layout.addWidget(self.progress_bar)
 
         self.eye_break_label = QLabel("Eye breaks today: 0")
-        self.eye_break_label.setAlignment(Qt.AlignCenter)
+        self.eye_break_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         main_layout.addWidget(self.eye_break_label)
 
         # ============================================================
@@ -335,7 +335,7 @@ class Protocol996(QWidget):
         stats_layout = QHBoxLayout()
 
         time_card = QFrame()
-        time_card.setFrameShape(QFrame.StyledPanel)
+        time_card.setFrameShape(QFrame.Shape.StyledPanel)
         time_layout = QVBoxLayout()
         time_layout.addWidget(QLabel("Time worked"))
         self.time_worked_label = QLabel("00:00:00")
@@ -344,7 +344,7 @@ class Protocol996(QWidget):
         time_card.setLayout(time_layout)
 
         breaks_card = QFrame()
-        breaks_card.setFrameShape(QFrame.StyledPanel)
+        breaks_card.setFrameShape(QFrame.Shape.StyledPanel)
         breaks_layout = QVBoxLayout()
         breaks_layout.addWidget(QLabel("Eye breaks"))
         self.breaks_count_label = QLabel("0")
@@ -363,7 +363,7 @@ class Protocol996(QWidget):
         # 7-day squares (Mon-Sun), green if 4+ hours worked
 
         streak_label = QLabel("This week")
-        streak_label.setAlignment(Qt.AlignCenter)
+        streak_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         streak_label.setStyleSheet(
             "font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;"
         )
@@ -378,12 +378,12 @@ class Protocol996(QWidget):
             square.setFixedSize(40, 40)
             square.setStyleSheet("background-color: #333; border: none;")
             label = QLabel(day)
-            label.setAlignment(Qt.AlignCenter)
+            label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             label.setStyleSheet("color: #8a8a96; font-size: 10px;")
             container = QVBoxLayout()
             container.setContentsMargins(0, 0, 0, 0)
-            container.addWidget(square, 0, Qt.AlignCenter)
-            container.addWidget(label, 0, Qt.AlignCenter)
+            container.addWidget(square, 0, Qt.AlignmentFlag.AlignCenter)
+            container.addWidget(label, 0, Qt.AlignmentFlag.AlignCenter)
             self.streak_layout.addLayout(container)
             self.streak_squares.append(square)
 
@@ -396,7 +396,7 @@ class Protocol996(QWidget):
         theme_layout = QHBoxLayout()
         theme_layout.addStretch()
         self.theme_btn = QPushButton("🌙 Dark" if self.theme == "light" else "☀️ Light")
-        self.theme_btn.setCursor(Qt.PointingHandCursor)
+        self.theme_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.theme_btn.clicked.connect(self.toggle_theme)
         theme_layout.addWidget(self.theme_btn)
         main_layout.addLayout(theme_layout)
@@ -526,7 +526,7 @@ class Protocol996(QWidget):
         layout.addWidget(close_btn)
 
         dialog.setLayout(layout)
-        dialog.exec_()
+        dialog.exec()
 
         self.reset_day()
         self.save_data()
@@ -589,7 +589,7 @@ class Protocol996(QWidget):
         close_btn.clicked.connect(dialog.close)
         layout.addWidget(close_btn)
         dialog.setLayout(layout)
-        dialog.exec_()
+        dialog.exec()
 
     def format_time(self, seconds):
         hours = seconds // 3600
@@ -840,7 +840,7 @@ class Protocol996(QWidget):
             dialog.button(QMessageBox.Yes).setText("End day & quit")
             dialog.button(QMessageBox.No).setText("Just minimize")
 
-            result = dialog.exec_()
+            result = dialog.exec()
 
             if result == QMessageBox.Yes:
                 self.end_day()
@@ -897,4 +897,4 @@ if __name__ == "__main__":
     window.setup_tray()
     window.show()
 
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
