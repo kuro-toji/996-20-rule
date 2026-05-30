@@ -28,13 +28,14 @@ This app doesn't judge you. It just shows you the time you have left.
 | **Stop session** | Pauses everything for breaks |
 | **End day** | Saves summary, resets timer for next day |
 | **Eye break overlay** | Fullscreen dark overlay, 20-sec break, unskippable for first 10 sec |
+| **Clipboard Notes** | Auto-capture clipboard content with timestamps for quick reference |
 | **Daily dashboard** | Manual notes, time worked, eye break count |
 | **Streak tracker** | 7-day squares (Mon-Sun), green if 4+ hours worked |
-| **Auto-save** | Every 10 seconds + on stop/close |
+| **Auto-save** | Every 5 seconds + on all state changes |
 | **System tray** | Minimize to tray, right-click menu |
 | **Keyboard shortcuts** | `Ctrl+S` stop, `Ctrl+R` resume, `Ctrl+E` end day, `Ctrl+T` toggle always-on-top, `Ctrl+Q` quit |
 | **Theme toggle** | Dark (default) / Light mode |
-| **Data storage** | Fully local: `~/.996protocol/data.json` |
+| **Data storage** | Fully local: `~/.996protocol/data.json` + `~/.996protocol/clipboard_notes.json` |
 
 ---
 
@@ -58,20 +59,34 @@ python 996.py
 
 ## Usage
 
-1. **Start a session** — Click "Start 20-20-20" (with eye protection) or "Start (no 20-20-20)" (focus mode)
+1. **Start a session** — Click "Start 20-20-20" (with eye protection) or "Start (focus mode)" (no eye breaks)
 2. **Work** — The timer counts down. Eye breaks occur every 20 minutes if enabled
-3. **Pause** — Click "Stop session" to pause (eye timer pauses too)
+3. **Pause** — Click "Stop session" to pause (resumes where you left off)
 4. **End day** — Click "End day" to save your session summary and reset
 
 ### Keyboard Shortcuts
 
 | Shortcut | Action |
 |----------|--------|
-| `Ctrl+S` | Stop session |
-| `Ctrl+R` | Resume session |
+| `Ctrl+S` | Stop/Pause session |
+| `Ctrl+R` | Resume last session mode |
 | `Ctrl+E` | End day |
 | `Ctrl+T` | Toggle always-on-top |
 | `Ctrl+Q` | Quit app |
+
+---
+
+## Clipboard Notes
+
+The app automatically captures clipboard content to help you remember important snippets:
+
+- **Auto-capture**: Any text copied (>10 chars) is automatically saved
+- **Manual add**: Click "+ Add" to manually create a note
+- **Copy back**: Click 📋 to copy a note back to clipboard
+- **Delete**: Click × to remove a note
+- **Daily reset**: Clipboard notes clear at the start of each new day
+
+Notes are stored in `~/.996protocol/clipboard_notes.json` (last 100 notes kept).
 
 ---
 
@@ -81,7 +96,10 @@ All data is stored locally in JSON format:
 
 ```
 ~/.996protocol/data.json
+~/.996protocol/clipboard_notes.json
 ```
+
+### Main data.json structure:
 
 ```json
 {
@@ -107,6 +125,23 @@ All data is stored locally in JSON format:
 }
 ```
 
+### Clipboard notes structure:
+
+```json
+[
+  {
+    "content": "Important text snippet captured...",
+    "timestamp": "2026-04-04T14:30:00",
+    "tags": ["manual"]
+  },
+  {
+    "content": "https://github.com/user/repo",
+    "timestamp": "2026-04-04T15:45:00",
+    "tags": ["url"]
+  }
+]
+```
+
 ---
 
 ## Eye Protection (20-20-20 Rule)
@@ -125,7 +160,7 @@ Every 20 minutes of active work:
 The app tracks your weekly progress with 7 squares (Mon–Sun):
 - **Green** — 4+ hours worked that day
 - **Gray** — No session or less than 4 hours
-- **White border** — Today
+- **Green border** — Today
 
 ---
 
