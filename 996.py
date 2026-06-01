@@ -45,17 +45,11 @@ try:
         QMessageBox,
         QFrame,
         QGridLayout,
+        QAction,
     )
     from PyQt6.QtCore import Qt, QTimer, QTime, pyqtSignal, QEvent
-    from PyQt6.QtGui import (
-        QFont,
-        QColor,
-        QPalette,
-        QAction,
-        QKeyEvent,
-        QPainter,
-        QBrush,
-    )
+    from PyQt6.QtCore import Qt, QTimer, QTime, pyqtSignal, QEvent
+    from PyQt6.QtGui import QFont, QColor, QPalette, QKeyEvent, QPainter, QBrush
 
     PyQt6 = True
 except ImportError:
@@ -75,17 +69,11 @@ except ImportError:
             QMessageBox,
             QFrame,
             QGridLayout,
+            QAction,
         )
         from PyQt5.QtCore import Qt, QTimer, QTime, pyqtSignal, QEvent
-        from PyQt5.QtGui import (
-            QFont,
-            QColor,
-            QPalette,
-            QAction,
-            QKeyEvent,
-            QPainter,
-            QBrush,
-        )
+        from PyQt5.QtCore import Qt, QTimer, QTime, pyqtSignal, QEvent
+        from PyQt5.QtGui import QFont, QColor, QPalette, QKeyEvent, QPainter, QBrush
 
         PyQt6 = False
     except ImportError:
@@ -323,10 +311,32 @@ class Protocol996(QWidget):
 
         self.clipboard_notes = ClipboardMonitor(self)
         self.load_data()
+
+        # Real-time clock timer
+        self.clock_timer = QTimer()
+        self.clock_timer.timeout.connect(self.update_clock)
+        self.clock_timer.start(1000)
+
+        # Main session timer
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.timer_tick)
+
+        # Note auto-save timer
+        self.note_timer = QTimer()
+        self.note_timer.setSingleShot(True)
+        self.note_timer.timeout.connect(self.save_note)
+
         self.setup_ui()
         self.apply_theme()
         self.center_on_screen()
         self.setup_clipboard_monitor()
+        self.update_clock() # Initial call
+
+    def update_clock(self):
+        """Update the real-time clock display."""
+        current_time = QTime.currentTime().toString("HH:mm:ss")
+        if hasattr(self, 'clock_label'):
+            self.clock_label.setText(current_time)
 
     def setup_clipboard_monitor(self):
         """Setup periodic clipboard check."""
@@ -354,118 +364,112 @@ class Protocol996(QWidget):
 
     def setup_ui(self):
         self.setWindowTitle("996 Protocol")
-        self.setMinimumSize(400, 600)
-        self.resize(480, 760)
+        self.setMinimumSize(420, 780)
+        self.resize(460, 820)
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
         main_layout = QVBoxLayout()
-        main_layout.setSpacing(12)
+        main_layout.setSpacing(16)
         main_layout.setContentsMargins(20, 20, 20, 20)
 
         # ============================================================
-        # HEADER: Title + Always on top toggle
+        # HEADER: Title + Clock + Always on top toggle
         # ============================================================
         header_layout = QHBoxLayout()
         title_label = QLabel("996 Protocol")
-        title_label.setStyleSheet("font-size: 20px; font-weight: bold; color: #1fbe82;")
+        title_label.setStyleSheet("font-size: 18px; font-weight: 800; color: #1fbe82; letter-spacing: 1px;")
+        
+        self.clock_label = QLabel("--:--:--")
+        self.clock_label.setStyleSheet("font-size: 18px; font-family: monospace; font-weight: bold; color: #8a8a96; margin-left: 10px;")
+        
         header_layout.addWidget(title_label)
+        header_layout.addWidget(self.clock_label)
         header_layout.addStretch()
         
         self.always_on_top_btn = QPushButton("📌")
-        self.always_on_top_btn.setFixedSize(30, 30)
+        self.always_on_top_btn.setFixedSize(32, 32)
         self.always_on_top_btn.setToolTip("Always on top")
         self.always_on_top_btn.clicked.connect(self.toggle_always_on_top)
-        self.always_on_top_btn.setStyleSheet(
-            "border: none; background: transparent; font-size: 16px;"
-        )
+        self.always_on_top_btn.setStyleSheet("border: none; background: transparent; font-size: 16px;")
         header_layout.addWidget(self.always_on_top_btn)
 
         main_layout.addLayout(header_layout)
 
         # ============================================================
-        # MAIN TIMER DISPLAY
+        # TIMER CARD
         # ============================================================
+        timer_card = QFrame()
+        timer_card.setObjectName("timerCard")
+        timer_layout = QVBoxLayout()
+        timer_layout.setContentsMargins(15, 20, 15, 20)
+        timer_layout.setSpacing(10)
+
         self.timer_label = QLabel("12:00:00")
         self.timer_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.timer_label.setStyleSheet(
-            "font-size: 72px; font-family: monospace; font-weight: bold; color: #f0f0f0;"
-        )
-        main_layout.addWidget(self.timer_label)
+        self.timer_label.setStyleSheet("font-size: 64px; font-family: monospace; font-weight: 800; color: #f0f0f0;")
+        timer_layout.addWidget(self.timer_label)
 
-        # ============================================================
-        # CONTROL BUTTONS
-        # ============================================================
-        button_layout = QVBoxLayout()
-        button_layout.setSpacing(8)
-
-        self.btn_start_2020 = QPushButton("▶ Start 20-20-20")
-        self.btn_start_2020.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_start_2020.clicked.connect(self.start_with_eye_protection)
-
-        self.btn_start_focus = QPushButton("▶ Start (focus mode)")
-        self.btn_start_focus.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_start_focus.clicked.connect(self.start_focus_mode)
-
-        self.btn_stop = QPushButton("⏸ Stop session")
-        self.btn_stop.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_stop.clicked.connect(self.stop_session)
-
-        self.btn_end_day = QPushButton("🏁 End day")
-        self.btn_end_day.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_end_day.clicked.connect(self.end_day)
-
-        for btn in [
-            self.btn_start_2020,
-            self.btn_start_focus,
-            self.btn_stop,
-            self.btn_end_day,
-        ]:
-            btn.setMinimumHeight(44)
-
-        button_layout.addWidget(self.btn_start_2020)
-        button_layout.addWidget(self.btn_start_focus)
-        button_layout.addWidget(self.btn_stop)
-        button_layout.addWidget(self.btn_end_day)
-
-        main_layout.addLayout(button_layout)
-
-        # ============================================================
-        # STATUS & PROGRESS
-        # ============================================================
         self.status_label = QLabel("Status: Idle ⏹")
         self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.status_label.setStyleSheet("font-weight: bold; font-size: 14px;")
-        main_layout.addWidget(self.status_label)
+        self.status_label.setStyleSheet("font-weight: 600; font-size: 13px; color: #8a8a96;")
+        timer_layout.addWidget(self.status_label)
 
         self.progress_bar = QProgressBar()
         self.progress_bar.setMaximum(12 * 3600)
         self.progress_bar.setValue(12 * 3600)
-        self.progress_bar.setFixedHeight(6)
-        main_layout.addWidget(self.progress_bar)
+        self.progress_bar.setFixedHeight(4)
+        self.progress_bar.setTextVisible(False)
+        timer_layout.addWidget(self.progress_bar)
 
-        self.eye_break_label = QLabel("👁 Eye breaks today: 0")
-        self.eye_break_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.eye_break_label.setStyleSheet("color: #8a8a96;")
-        main_layout.addWidget(self.eye_break_label)
+        timer_card.setLayout(timer_layout)
+        main_layout.addWidget(timer_card)
 
         # ============================================================
-        # CLIPBOARD NOTES PANEL
+        # CONTROLS CARD (2x2 Grid)
         # ============================================================
-        clipboard_group = QFrame()
-        clipboard_group.setFrameShape(QFrame.Shape.StyledPanel)
+        controls_card = QFrame()
+        controls_layout = QGridLayout()
+        controls_layout.setContentsMargins(12, 12, 12, 12)
+        controls_layout.setSpacing(10)
+
+        self.btn_start_2020 = QPushButton("▶ Start 20-20-20")
+        self.btn_start_focus = QPushButton("▶ Focus Mode")
+        self.btn_stop = QPushButton("⏸ Stop Session")
+        self.btn_end_day = QPushButton("🏁 End Day")
+
+        for btn in [self.btn_start_2020, self.btn_start_focus, self.btn_stop, self.btn_end_day]:
+            btn.setMinimumHeight(42)
+            btn.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        self.btn_start_2020.clicked.connect(self.start_with_eye_protection)
+        self.btn_start_focus.clicked.connect(self.start_focus_mode)
+        self.btn_stop.clicked.connect(self.stop_session)
+        self.btn_end_day.clicked.connect(self.end_day)
+
+        controls_layout.addWidget(self.btn_start_2020, 0, 0)
+        controls_layout.addWidget(self.btn_start_focus, 0, 1)
+        controls_layout.addWidget(self.btn_stop, 1, 0)
+        controls_layout.addWidget(self.btn_end_day, 1, 1)
+
+        controls_card.setLayout(controls_layout)
+        main_layout.addWidget(controls_card)
+
+        # ============================================================
+        # CLIPBOARD CARD
+        # ============================================================
+        clipboard_card = QFrame()
         clipboard_layout = QVBoxLayout()
-        clipboard_layout.setSpacing(8)
-        clipboard_layout.setContentsMargins(12, 12, 12, 12)
+        clipboard_layout.setSpacing(10)
+        clipboard_layout.setContentsMargins(15, 15, 15, 15)
         
         clipboard_header = QHBoxLayout()
-        clipboard_title = QLabel("📋 Clipboard Notes")
-        clipboard_title.setStyleSheet("font-size: 11px; font-weight: 600; letter-spacing: 1px;")
+        clipboard_title = QLabel("📋 CLIPBOARD NOTES")
+        clipboard_title.setStyleSheet("font-size: 10px; font-weight: 800; letter-spacing: 1.5px; color: #666;")
         clipboard_header.addWidget(clipboard_title)
         clipboard_header.addStretch()
         
         self.add_note_btn = QPushButton("+ Add")
-        self.add_note_btn.setFixedSize(50, 24)
-        self.add_note_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.add_note_btn.setFixedSize(54, 24)
         self.add_note_btn.clicked.connect(self.show_add_note_dialog)
         self.add_note_btn.setStyleSheet("padding: 2px 8px; font-size: 11px;")
         clipboard_header.addWidget(self.add_note_btn)
@@ -473,127 +477,115 @@ class Protocol996(QWidget):
         clipboard_layout.addLayout(clipboard_header)
         
         self.clipboard_list = QVBoxLayout()
-        self.clipboard_list.setSpacing(4)
+        self.clipboard_list.setSpacing(6)
         self.refresh_clipboard_display()
         
         clipboard_layout.addLayout(self.clipboard_list)
-        clipboard_group.setLayout(clipboard_layout)
-        main_layout.addWidget(clipboard_group)
+        clipboard_card.setLayout(clipboard_layout)
+        main_layout.addWidget(clipboard_card)
 
         # ============================================================
-        # DAILY DASHBOARD
+        # DAILY DASHBOARD CARD
         # ============================================================
-        self.dashboard_label = QLabel(f"Today — {self.get_formatted_date()}")
-        self.dashboard_label.setStyleSheet(
-            "font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: #666;"
-        )
-        main_layout.addWidget(self.dashboard_label)
+        dashboard_card = QFrame()
+        dashboard_layout = QVBoxLayout()
+        dashboard_layout.setContentsMargins(15, 15, 15, 15)
+        dashboard_layout.setSpacing(12)
 
-        self.note_text = QTextEdit()
-        self.note_text.setPlaceholderText(
-            "📝 Write what you did today... (research, books read, tasks completed)"
-        )
-        self.note_text.setMinimumHeight(80)
-        self.note_text.setMaximumHeight(100)
-        self.note_text.textChanged.connect(self.on_note_changed)
-        main_layout.addWidget(self.note_text)
+        self.dashboard_label = QLabel(f"TODAY — {self.get_formatted_date().upper()}")
+        self.dashboard_label.setStyleSheet("font-size: 10px; font-weight: 800; letter-spacing: 1.5px; color: #666;")
+        dashboard_layout.addWidget(self.dashboard_label)
 
-        # ============================================================
-        # STATS CARDS
-        # ============================================================
+        # Stats Row
         stats_layout = QHBoxLayout()
-        stats_layout.setSpacing(12)
+        stats_layout.setSpacing(10)
 
-        time_card = QFrame()
-        time_card.setFrameShape(QFrame.Shape.StyledPanel)
-        time_layout = QVBoxLayout()
-        time_layout.setContentsMargins(12, 8, 12, 8)
-        time_label = QLabel("⏱ Time worked")
-        time_label.setStyleSheet("font-size: 10px; color: #8a8a96;")
+        # Time Stats
+        time_frame = QFrame()
+        time_frame.setStyleSheet("background: transparent; border: none;")
+        time_vbox = QVBoxLayout(time_frame)
+        time_vbox.setContentsMargins(0, 0, 0, 0)
+        time_vbox.setSpacing(2)
+        time_lbl = QLabel("TIME WORKED")
+        time_lbl.setStyleSheet("font-size: 9px; color: #8a8a96; font-weight: bold;")
         self.time_worked_label = QLabel("00:00:00")
-        self.time_worked_label.setStyleSheet("font-size: 18px; font-weight: bold; color: #1fbe82;")
-        time_layout.addWidget(time_label)
-        time_layout.addWidget(self.time_worked_label)
-        time_card.setLayout(time_layout)
-
-        breaks_card = QFrame()
-        breaks_card.setFrameShape(QFrame.Shape.StyledPanel)
-        breaks_layout = QVBoxLayout()
-        breaks_layout.setContentsMargins(12, 8, 12, 8)
-        breaks_label = QLabel("👁 Eye breaks")
-        breaks_label.setStyleSheet("font-size: 10px; color: #8a8a96;")
+        self.time_worked_label.setStyleSheet("font-size: 16px; font-weight: 800; color: #1fbe82;")
+        time_vbox.addWidget(time_lbl)
+        time_vbox.addWidget(self.time_worked_label)
+        
+        # Break Stats
+        break_frame = QFrame()
+        break_frame.setStyleSheet("background: transparent; border: none;")
+        break_vbox = QVBoxLayout(break_frame)
+        break_vbox.setContentsMargins(0, 0, 0, 0)
+        break_vbox.setSpacing(2)
+        break_lbl = QLabel("EYE BREAKS")
+        break_lbl.setStyleSheet("font-size: 9px; color: #8a8a96; font-weight: bold;")
         self.breaks_count_label = QLabel("0")
-        self.breaks_count_label.setStyleSheet("font-size: 18px; font-weight: bold; color: #8b7cf8;")
-        breaks_layout.addWidget(breaks_label)
-        breaks_layout.addWidget(self.breaks_count_label)
-        breaks_card.setLayout(breaks_layout)
+        self.breaks_count_label.setStyleSheet("font-size: 16px; font-weight: 800; color: #8b7cf8;")
+        break_vbox.addWidget(break_lbl)
+        break_vbox.addWidget(self.breaks_count_label)
 
-        stats_layout.addWidget(time_card, 1)
-        stats_layout.addWidget(breaks_card, 1)
+        stats_layout.addWidget(time_frame)
+        stats_layout.addWidget(break_frame)
+        dashboard_layout.addLayout(stats_layout)
 
-        main_layout.addLayout(stats_layout)
+        # Note Area
+        self.note_text = QTextEdit()
+        self.note_text.setPlaceholderText("📝 Write what you did today...")
+        self.note_text.setMinimumHeight(70)
+        self.note_text.setMaximumHeight(80)
+        self.note_text.textChanged.connect(self.on_note_changed)
+        dashboard_layout.addWidget(self.note_text)
 
-        # ============================================================
-        # STREAK TRACKER
-        # ============================================================
-        streak_label = QLabel("📅 This week")
-        streak_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        streak_label.setStyleSheet(
-            "font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: #666;"
-        )
-        main_layout.addWidget(streak_label)
+        # Streak Row
+        streak_vbox = QVBoxLayout()
+        streak_vbox.setSpacing(6)
+        streak_title = QLabel("WEEKLY PROGRESS")
+        streak_title.setStyleSheet("font-size: 9px; font-weight: bold; color: #666; letter-spacing: 1px;")
+        streak_vbox.addWidget(streak_title)
 
         self.streak_layout = QHBoxLayout()
-        self.streak_layout.setSpacing(6)
+        self.streak_layout.setSpacing(8)
         self.streak_squares = []
         day_names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-        for i, day in enumerate(day_names):
+        for day in day_names:
             container = QVBoxLayout()
-            container.setContentsMargins(0, 0, 0, 0)
             container.setSpacing(4)
-            
             square = QFrame()
-            square.setFixedSize(36, 36)
-            square.setStyleSheet("background-color: #333; border: none; border-radius: 6px;")
+            square.setFixedSize(32, 32)
+            square.setStyleSheet("background-color: #2a2a2e; border-radius: 6px;")
             container.addWidget(square, 0, Qt.AlignmentFlag.AlignCenter)
-            
-            label = QLabel(day)
-            label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            label.setStyleSheet("color: #666; font-size: 9px;")
-            container.addWidget(label, 0, Qt.AlignmentFlag.AlignCenter)
-            
+            lbl = QLabel(day[0])
+            lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            lbl.setStyleSheet("color: #555; font-size: 9px; font-weight: bold;")
+            container.addWidget(lbl, 0, Qt.AlignmentFlag.AlignCenter)
             self.streak_layout.addLayout(container)
             self.streak_squares.append(square)
+        
+        streak_vbox.addLayout(self.streak_layout)
+        dashboard_layout.addLayout(streak_vbox)
 
-        main_layout.addLayout(self.streak_layout)
+        dashboard_card.setLayout(dashboard_layout)
+        main_layout.addWidget(dashboard_card)
 
         # ============================================================
-        # FOOTER: Theme toggle
+        # FOOTER
         # ============================================================
         footer_layout = QHBoxLayout()
         footer_layout.addStretch()
-        
-        self.theme_btn = QPushButton("☀️ Light" if self.theme == "light" else "🌙 Dark")
-        self.theme_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.theme_btn = QPushButton("🌙 Dark")
+        self.theme_btn.setFixedSize(80, 28)
         self.theme_btn.clicked.connect(self.toggle_theme)
-        self.theme_btn.setStyleSheet(
-            "padding: 6px 14px; font-size: 12px; background: transparent; color: #666; border: 1px solid #333; border-radius: 6px;"
-        )
+        self.theme_btn.setStyleSheet("font-size: 11px; padding: 0; background: #2a2a2e; color: #a0a0a0; border-radius: 4px;")
         footer_layout.addWidget(self.theme_btn)
         main_layout.addLayout(footer_layout)
 
         self.setLayout(main_layout)
 
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.timer_tick)
-
         self.load_today_data()
         self.update_streak_display()
         self.update_buttons_state()
-
-        self.note_timer = QTimer()
-        self.note_timer.setSingleShot(True)
-        self.note_timer.timeout.connect(self.save_note)
     
     def refresh_clipboard_display(self):
         """Refresh the clipboard notes list display."""
@@ -887,7 +879,6 @@ class Protocol996(QWidget):
             "QProgressBar::chunk { background-color: #1fbe82; }"
         )
 
-        self.eye_break_label.setText("👁 Eye breaks today: 0")
         self.time_worked_label.setText("00:00:00")
         self.breaks_count_label.setText("0")
         self.update_buttons_state()
@@ -906,7 +897,6 @@ class Protocol996(QWidget):
     def on_eye_break_dismissed(self):
         self.overlay = None
         self.eye_breaks_today += 1
-        self.eye_break_label.setText(f"👁 Eye breaks today: {self.eye_breaks_today}")
         self.breaks_count_label.setText(str(self.eye_breaks_today))
 
         if self.state == "running":
@@ -1022,7 +1012,6 @@ class Protocol996(QWidget):
             self.note_text.setPlainText(session.get("note", ""))
 
             self.time_worked_label.setText(self.format_time(self.worked_seconds_today))
-            self.eye_break_label.setText(f"👁 Eye breaks today: {self.eye_breaks_today}")
             self.breaks_count_label.setText(str(self.eye_breaks_today))
 
         self.theme = self.data.get("settings", {}).get("theme", "dark")
@@ -1055,97 +1044,115 @@ class Protocol996(QWidget):
         if self.theme == "dark":
             self.setStyleSheet("""
                 QWidget {
-                    background-color: #0e0e0f;
-                    color: #f0f0f0;
+                    background-color: #0c0c0d;
+                    color: #e0e0e0;
+                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
                 }
                 QFrame {
                     background-color: #161618;
-                    border: 1px solid rgba(255,255,255,0.06);
-                    border-radius: 8px;
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                    border-radius: 12px;
+                }
+                QFrame#timerCard {
+                    background-color: #1a1a1c;
+                    border: 1px solid rgba(31, 190, 130, 0.2);
                 }
                 QTextEdit {
-                    background-color: #1e1e21;
-                    border: 1px solid rgba(255,255,255,0.08);
+                    background-color: #0c0c0d;
+                    border: 1px solid rgba(255, 255, 255, 0.1);
                     border-radius: 8px;
-                    color: #f0f0f0;
-                    font-family: monospace;
-                    font-size: 12px;
-                    padding: 8px;
+                    color: #d1d1d1;
+                    font-size: 13px;
+                    padding: 10px;
                 }
                 QPushButton {
                     background-color: #1fbe82;
-                    color: #0e0e0f;
+                    color: #0c0c0d;
                     border: none;
                     border-radius: 8px;
-                    padding: 10px 20px;
+                    font-weight: 700;
                     font-size: 13px;
-                    font-weight: medium;
                 }
                 QPushButton:hover {
                     background-color: #2fd692;
+                }
+                QPushButton:pressed {
+                    background-color: #1aa671;
                 }
                 QPushButton:disabled {
                     background-color: #2a2a2e;
                     color: #555;
                 }
                 QLabel {
-                    color: #f0f0f0;
+                    color: #e0e0e0;
+                    border: none;
+                    background: transparent;
                 }
                 QProgressBar {
                     background-color: #2a2a2e;
                     border: none;
-                    border-radius: 3px;
+                    border-radius: 2px;
                 }
                 QProgressBar::chunk {
                     background-color: #1fbe82;
+                    border-radius: 2px;
                 }
             """)
         else:
             self.setStyleSheet("""
                 QWidget {
-                    background-color: #f5f5f7;
-                    color: #111111;
+                    background-color: #f8f9fa;
+                    color: #1a1a1a;
+                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
                 }
                 QFrame {
                     background-color: #ffffff;
-                    border: 1px solid rgba(0,0,0,0.08);
-                    border-radius: 8px;
+                    border: 1px solid rgba(0, 0, 0, 0.06);
+                    border-radius: 12px;
+                }
+                QFrame#timerCard {
+                    background-color: #ffffff;
+                    border: 1px solid rgba(31, 190, 130, 0.3);
                 }
                 QTextEdit {
-                    background-color: #ffffff;
-                    border: 1px solid rgba(0,0,0,0.1);
+                    background-color: #fcfcfc;
+                    border: 1px solid rgba(0, 0, 0, 0.08);
                     border-radius: 8px;
-                    color: #111111;
-                    font-family: monospace;
-                    font-size: 12px;
-                    padding: 8px;
+                    color: #2a2a2a;
+                    font-size: 13px;
+                    padding: 10px;
                 }
                 QPushButton {
                     background-color: #1fbe82;
-                    color: #0e0e0f;
+                    color: #ffffff;
                     border: none;
                     border-radius: 8px;
-                    padding: 10px 20px;
+                    font-weight: 700;
                     font-size: 13px;
-                    font-weight: medium;
                 }
                 QPushButton:hover {
                     background-color: #2fd692;
                 }
+                QPushButton:pressed {
+                    background-color: #1aa671;
+                }
                 QPushButton:disabled {
-                    background-color: #e0e0e0;
-                    color: #999;
+                    background-color: #e9ecef;
+                    color: #adb5bd;
                 }
                 QLabel {
-                    color: #111111;
+                    color: #1a1a1a;
+                    border: none;
+                    background: transparent;
                 }
                 QProgressBar {
-                    background-color: #e0e0e0;
+                    background-color: #e9ecef;
                     border: none;
-                    border-radius: 3px;
+                    border-radius: 2px;
                 }
                 QProgressBar::chunk {
                     background-color: #1fbe82;
+                    border-radius: 2px;
                 }
             """)
 
